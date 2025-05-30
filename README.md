@@ -45,9 +45,9 @@ response = client.guardrail(
 print(response)
 ```
 
-## Example Responses
+### Example Responses
 The response returned by the guardrail method is a dictionary.
-### Successful Response
+#### Successful Response
 ```python
 {
     "success": true,
@@ -60,7 +60,7 @@ The response returned by the guardrail method is a dictionary.
 }
 ```
 
-### Error Response
+#### Error Response
 If an error occurs, the SDK will retry the request up to the specified number of retries (`retries` parameter in `WalledProtect`) or default retry number. If the retries are exhausted, it will return an error response.
 ```python
 {
@@ -68,4 +68,44 @@ If an error occurs, the SDK will retry the request up to the specified number of
     "error": "Invalid API key provided."
 }
 ```
+## PII
 
+Processes the text using Walled AI's PII mechanisms.
+
+#### Parameters:
+- **`text`** (*str*, required): The input text to be processed.
+
+#### Example Usage:
+```python
+response = client.pii(
+    text="Hello , How are you Henry", 
+)
+print(response)
+```
+
+### Example Responses
+The response returned by the guardrail method is a dictionary.
+#### Successful Response
+```python
+{
+    "success": true,
+    "data": {
+        "success": true,
+        "remark": "Success! one attempt",
+        "input": "Hi my name is Henry",
+        "masked_text": "Hello my name is PN1",
+        "mapping": {
+            "PNA1": "indranil"
+        }
+    }
+}
+```
+
+#### Error Response
+If an error occurs, the SDK will retry the request up to the specified number of retries (`retries` parameter in `WalledProtect`) or default retry number. If the retries are exhausted, it will return an error response.
+```python
+{
+    "success": false,
+    "error": "Invalid API key provided."
+}
+```
