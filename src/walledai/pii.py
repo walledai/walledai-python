@@ -2,20 +2,18 @@
 
 importing  requests module
 """
-
 import requests
 import json
 import time
 from walledai.constants import base_url
-from walledai.custom_types.guardrail import GuardRailResponse
-from typing import List
-class WalledProtect:
-    ''' Walled Protect '''
+from walledai.custom_types.pii import PIIResponse
+class PII:
+    ''' PII'''
     count=1
-    url=f'{base_url}/guardrail/moderate'
+    url=f'{base_url}/pii/encrypt'
     def __init__(self,api_key:str,retries:int=2,timeout:float=20.0):
         """
-        Initialize the WalledProtect client.
+        Initialize the PII client.
 
         This sets up the client with the required API key and optional configurations
         for request retry logic and timeout behavior.
@@ -34,22 +32,20 @@ class WalledProtect:
         self.api_key = api_key
         self.retries=retries  
         self.timeout=timeout
-    def guardrail(self,text:str,greetings_list:List[str],text_type:str="prompt",generic_safety_check:bool=True)->GuardRailResponse:
+    def pii(self,text:str)->PIIResponse:
         """
-        Runs guardrails on the given input text to evaluate safety, PII, compliance, and greetings.
+        Runs pii on the given input text to evaluate safety.
 
         This method sends a request to the Walled AI API and returns a structured response
-        indicating whether the input passes various checks.
+        indicating with PII formated data.
 
         Args:
             text (str): The input text to evaluate.
-            greetings_list (list[str]): A list of greeting category strings to match against.
-            text_type (str, optional): The type of input text (e.g., "prompt", "completion"). Defaults to "prompt".
-            generic_safety_check (bool, optional): Whether to enable general safety filters. Defaults to True.
 
         Returns:
-            GuardRailResponse: An object containing the evaluation results, including safety scores,
+            PIIResponse: An object containing the evaluation results, including safety scores,
             greeting matches, and compliance or PII flags.
+
         If the request fails, a dictionary is returned with:
             - `success` (bool): Always False
             - `error` (str): The error message explaining the failure
@@ -61,10 +57,7 @@ class WalledProtect:
         """
         try:
             request_body=json.dumps({
-                "text":text,
-                "text_type":text_type,
-                "generic_safety_check": generic_safety_check,
-	            "greetings_list": greetings_list
+                "text":text
             })
             headers={"Authorization": f"Bearer {self.api_key}", 'Content-Type': 'application/json'}
             response = requests.request("POST", self.url, headers=headers, data=request_body,timeout=self.timeout)
@@ -77,7 +70,7 @@ class WalledProtect:
             if self.count<self.retries:
                 self.count+=1
                 time.sleep(2)
-                return self.guardrail(text,greetings_list)
+                return self.pii(text)
             else:
                 print("Reached Maximum No of retries \n")
                 return {"success":False,"error":e}
