@@ -55,7 +55,7 @@ jobs:
           print(f"Current version: {current_version}")
 
           # Parse version
-          version_parts = cursource bi  nt_version.split('.')
+          version_parts = current_version.split('.')
           major = int(version_parts[0])
           minor = int(version_parts[1])
           patch = int(version_parts[2])
