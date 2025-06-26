@@ -20,7 +20,10 @@ response = client.guardrail(
     text="Hello , How are you", 
     greetings_list=["generalgreetings"], 
     text_type="prompt", 
-    generic_safety_check=True
+    generic_safety_check=True,
+    compliance_list=:[],
+    pii_list=[]
+
 )
 print(response)
 ```
@@ -30,9 +33,11 @@ Processes the text using Walled AI's protection mechanisms.
 
 #### Parameters:
 - **`text`** (*str*, required): The input text to be processed.
-- **`greetings_list`** (*list of str*, optional): A list of predefined greetings categories.
+- **`greetings_list`** (*list of str*, optional): A list of predefined greetings categories.  ex : ["Casual & Friendly", "Formal", "Professional"]. Defaults to ["Casual & Friendly"]
 - **`text_type`** (*str*, optional): Type of text being processed. Defaults to `"prompt"`.
 - **`generic_safety_check`** (*bool*, optional): Whether to apply a general safety filter. Defaults to `True`.
+- **`compliance_list`** (*list of str*, optional): A list of compliances.
+- **`pii_list`** (*list of str*, optional): Must be empty or contain only the following values: `"Person's Name"`, `"Address"`, `"Email Id"`, `"Contact No"`, `"Date Of Birth"`, `"Unique Id"`, `"Financial Data"`.
 
 #### Example Usage:
 ```python
@@ -40,7 +45,9 @@ response = client.guardrail(
     text="Hello , How are you", 
     greetings_list=["generalgreetings"], 
     text_type="prompt", 
-    generic_safety_check=True
+    generic_safety_check=True,
+    pii_list=[],
+    compliance_list=["Medical","Finance"]
 )
 print(response)
 ```
@@ -109,3 +116,4 @@ If an error occurs, the SDK will retry the request up to the specified number of
     "error": "Invalid API key provided."
 }
 ```
+````
