@@ -9,6 +9,7 @@ import time
 from walledai.constants import base_url
 from walledai.custom_types.guardrail import GuardRailResponse
 from typing import List
+from typing_extensions import Literal
 class WalledProtect:
     ''' Walled Protect '''
     count=1
@@ -34,7 +35,15 @@ class WalledProtect:
         self.api_key = api_key
         self.retries=retries  
         self.timeout=timeout
-    def guardrail(self,text:str,greetings_list:List[str],text_type:str="prompt",generic_safety_check:bool=True)->GuardRailResponse:
+    def guardrail(
+        self,
+        text: str,
+        greetings_list: List[str]=["Casual & Friendly"],
+        text_type: str = "prompt",
+        generic_safety_check: bool = True,
+        compliance: List[str] = [],
+        pii: List[Literal["Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth","Unique Id","Financial Data"]] = []
+    ) -> GuardRailResponse:
         """
         Runs guardrails on the given input text to evaluate safety, PII, compliance, and greetings.
 
@@ -43,9 +52,11 @@ class WalledProtect:
 
         Args:
             text (str): The input text to evaluate.
-            greetings_list (list[str]): A list of greeting category strings to match against.
+            greetings_list (list[str]): A list of greeting category strings to match against. ex : ["Casual & Friendly", "Formal", "Professional"]. Defaults to ["Casual & Friendly"].
             text_type (str, optional): The type of input text (e.g., "prompt", "completion"). Defaults to "prompt".
             generic_safety_check (bool, optional): Whether to enable general safety filters. Defaults to True.
+            compliance_list (list[str], optional): A list of compliance categories to check against. Defaults to an empty list.
+            pii_list (list[str], optional): A list of PII categories to check against. Defaults to an empty list.
 
         Returns:
             GuardRailResponse: An object containing the evaluation results, including safety scores,
@@ -59,12 +70,20 @@ class WalledProtect:
             - If all retries fail, the final response will contain an error message instead of throwing an exception.
 
         """
+        # Allowed PII values
+        allowed_pii = {
+            "Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth", "Unique Id", "Financial Data"
+        }
+        if pii and not all(item in allowed_pii for item in pii):
+            raise ValueError(f"'pii' must be empty or contain only: {sorted(allowed_pii)}")
         try:
             request_body=json.dumps({
                 "text":text,
                 "text_type":text_type,
                 "generic_safety_check": generic_safety_check,
-	            "greetings_list": greetings_list
+	            "greetings_list": greetings_list,
+                "compliance_list": compliance ,
+                "pii_list": pii 
             })
             headers={"Authorization": f"Bearer {self.api_key}", 'Content-Type': 'application/json'}
             response = requests.request("POST", self.url, headers=headers, data=request_body,timeout=self.timeout)
