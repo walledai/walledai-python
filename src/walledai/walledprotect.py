@@ -41,8 +41,8 @@ class WalledProtect:
         greetings_list: List[str]=["Casual & Friendly"],
         text_type: str = "prompt",
         generic_safety_check: bool = True,
-        compliance: List[str] = [],
-        pii: List[Literal["Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth","Unique Id","Financial Data"]] = []
+        compliance_list: List[str] = [],
+        pii_list: List[Literal["Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth","Unique Id","Financial Data"]] = []
     ) -> GuardRailResponse:
         """
         Runs guardrails on the given input text to evaluate safety, PII, compliance, and greetings.
@@ -74,7 +74,7 @@ class WalledProtect:
         allowed_pii = {
             "Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth", "Unique Id", "Financial Data"
         }
-        if pii and not all(item in allowed_pii for item in pii):
+        if pii_list and not all(item in allowed_pii for item in pii_list):
             raise ValueError(f"'pii' must be empty or contain only: {sorted(allowed_pii)}")
         try:
             request_body=json.dumps({
@@ -82,8 +82,8 @@ class WalledProtect:
                 "text_type":text_type,
                 "generic_safety_check": generic_safety_check,
 	            "greetings_list": greetings_list,
-                "compliance_list": compliance ,
-                "pii_list": pii 
+                "compliance_list": compliance_list ,
+                "pii_list": pii_list 
             })
             headers={"Authorization": f"Bearer {self.api_key}", 'Content-Type': 'application/json'}
             response = requests.request("POST", self.url, headers=headers, data=request_body,timeout=self.timeout)
