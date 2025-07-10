@@ -17,7 +17,6 @@ class WalledProtect:
     def __init__(self,api_key:str,retries:int=2,timeout:float=20.0):
         """
         Initialize the WalledProtect client.
-
         This sets up the client with the required API key and optional configurations
         for request retry logic and timeout behavior.
 
