@@ -87,7 +87,7 @@ class WalledProtect:
                 return resp_json
         except Exception as e:
             raise e
-
+    # added guard
     def guard(
         self,
         text: str,
