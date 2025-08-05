@@ -8,3 +8,13 @@ include/
 lib/
 lib64/
 *__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pywz
+test_invalid_columns.csv
+unit_test_cases.csv
+unit_test_cases2.csv
+.python-version

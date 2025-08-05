@@ -3,15 +3,19 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "walledai"  # No spaces; Use lowercase
-version = "1.0.1" # latest build
+name = "walledai"
+version = "3.0.0"
 description = "A Python SDK for interacting with Walled AI"
 readme = "README.md"
 authors = [{ name = "Walled AI", email = "rishabh@walled.ai" }]
 license = { file = "LICENSE" }
-requires-python=">=3.8"
-dependencies = ["requests>=2.25.1","typing_extensions>=4.0.0"]
-
+requires-python = ">=3.8"
+dependencies = [
+    "aiohttp>=3.8.0",
+    "typing_extensions>=4.0.0",
+    "pandas>=1.3.0",
+    "scikit-learn>=1.0.0"
+]
 [tool.setuptools]
 package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
