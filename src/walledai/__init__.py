@@ -1,5 +1,5 @@
 from .walledprotect import WalledProtect
-from .pii import PII
+from .walledredact import WalledRedact
 __all__ = [
-    "WalledProtect","PII"
+    "WalledProtect","WalledRedact"
 ]
