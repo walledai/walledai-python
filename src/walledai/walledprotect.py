@@ -369,7 +369,7 @@ class WalledProtect:
 
         print(f"Metrics written to {out_path}")
 
-    async def eval(self, ground_truth_file_path: str, model_output_file_path: str, metrics_output_file_path: str, concurrency_limit: int = 20):
+    async def eval(self, ground_truth_file_path: str, model_output_file_path: str, metrics_output_file_path: str, concurrency_limit: int = 10):
         """
         Evaluates the model output against the ground truth file using only HTTP API.
 
@@ -377,7 +377,7 @@ class WalledProtect:
             ground_truth_file (str): Path to the ground truth file.
             model_output_file (str): Path to the model output file.
             metrics_output_file (str): Path to the metrics output file.
-            concurrency_limit (int): Maximum number of concurrent HTTP requests. Defaults to 20.
+            concurrency_limit (int): Maximum number of concurrent HTTP requests. Defaults to 10.
         Raises:
             Exception: If there is an error during the evaluation process, it will retry up to the specified number of retries.
         Returns:
