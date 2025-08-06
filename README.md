@@ -138,7 +138,7 @@ import asyncio
 from walledai import WalledProtect
 
 client = WalledProtect("your_api_key", retries=3)  # retries is optional
-asyncio.run(await client.eval(
+asyncio.run(client.eval(
     ground_truth_file_path="./unit_test_cases.csv",
     model_output_file_path="./model_results.csv",
     metrics_output_file_path="./metrics.csv",
