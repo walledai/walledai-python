@@ -134,24 +134,51 @@ The SDK provides an evaluation method to test and measure the performance of the
 #### Example Usage:
 ```python
 # Run evaluation
-await client.eval(
+import asyncio
+from walledai import WalledProtect
+
+client = WalledProtect("your_api_key", retries=3)  # retries is optional
+asyncio.run(await client.eval(
     ground_truth_file_path="./unit_test_cases.csv",
     model_output_file_path="./model_results.csv",
     metrics_output_file_path="./metrics.csv",
     concurrency_limit=20
-)
+))
 ```
 
 ### Ground Truth CSV Format
-The ground truth CSV should contain the following columns:
-- `text`: Input text to be processed
-- `expected_safety`: Expected safety result (true/false)
-- `expected_compliance`: Expected compliance result (true/false)
-- `expected_pii`: Expected PII detection result (true/false)
-- `expected_greetings`: Expected greetings detection result (true/false)
+The ground truth CSV file has flexible column requirements:
+
+#### Required Columns (must be present in this order):
+- `test_input`: The input text to be processed.
+- `compliance_topic`: The compliance topic for the test case.
+- `compliance_isOnTopic`: Whether the input is on the specified compliance topic (`TRUE` or `FALSE`).
+
+#### Optional Columns (can be included as needed):
+- `Person's Name`: Whether a person's name is present (`TRUE` or `FALSE`).
+- `Address`: Whether an address is present (`TRUE` or `FALSE`).
+- `Email Id`: Whether an email ID is present (`TRUE` or `FALSE`).
+- `Contact No`: Whether a contact number is present (`TRUE` or `FALSE`).
+- `Date Of Birth`: Whether a date of birth is present (`TRUE` or `FALSE`).
+- `Unique Id`: Whether a unique ID is present (`TRUE` or `FALSE`).
+- `Financial Data`: Whether financial data is present (`TRUE` or `FALSE`).
+- `Casual & Friendly`: Whether the greeting is casual & friendly (`TRUE` or `FALSE`).
+- `Professional & Polite`: Whether the greeting is professional & polite (`TRUE` or `FALSE`).
+
+**Notes:**
+- Only the first 3 columns are mandatory and must be present in the exact order specified above.
+- Optional columns can be included in any order after the required columns.
+- The values for boolean columns should be `TRUE` or `FALSE` (case-insensitive).
+- Missing optional columns will not result in an error during evaluation.
+
+#### Example of a valid ground truth file
+See [`unit_test_cases.csv`](./unit_test_cases.csv) for a complete example.
 
 ### Output Files
-1. **Model Results CSV**: Contains the actual model predictions for each test case
+1. **Model Results CSV**: Contains the actual model predictions for each test case. This file will include:
+   - All columns present in the ground truth file
+   - An additional `is_safe` column with `TRUE` or `FALSE` values indicating whether the input passed the safety evaluation
+   
 2. **Metrics CSV**: Contains evaluation metrics including:
    - Accuracy scores
    - Precision and recall
