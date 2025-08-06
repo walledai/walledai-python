@@ -172,7 +172,7 @@ The ground truth CSV file has flexible column requirements:
 - Missing optional columns will not result in an error during evaluation.
 
 #### Example of a valid ground truth file
-See [`unit_test_cases.csv`](./unit_test_cases.csv) for a complete example.
+See [`example_unit_test_file`](https://docs.google.com/spreadsheets/d/136QaJQJr5KACXjuTPr86a2-XIFq8APy8XKVg6J00X9U/edit?usp=sharing) for a complete example.
 
 ### Output Files
 1. **Model Results CSV**: Contains the actual model predictions for each test case. This file will include:
