@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-permissions:
-  contents: write  # 🔹 Allow pushing commits
 
 jobs:
   pypi-publish:
@@ -18,43 +16,51 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel toml build
-
+          pip install setuptools wheel toml
       - name: Determine version bump type
         id: bump_type
         run: |
+          # Default to patch bump
           BUMP_TYPE="patch"
+
+          # Look at commit message to determine bump type
           LATEST_COMMIT_MSG=$(git log -1 --pretty=%B)
           if [[ $LATEST_COMMIT_MSG == *"#major"* ]]; then
             BUMP_TYPE="major"
           elif [[ $LATEST_COMMIT_MSG == *"#minor"* ]]; then
             BUMP_TYPE="minor"
           fi
+
           echo "bump=$BUMP_TYPE" >> $GITHUB_OUTPUT
 
       - name: Bump version
         id: bump_version
         run: |
           python - <<EOF
-          import toml, os
+          import toml
+          import os
 
+          # Load the current version
           with open('pyproject.toml', 'r') as f:
               config = toml.load(f)
 
           current_version = config['project']['version']
           print(f"Current version: {current_version}")
 
-          major, minor, patch = map(int, current_version.split('.'))
+          # Parse version
+          version_parts = current_version.split('.')
+          major = int(version_parts[0])
+          minor = int(version_parts[1])
+          patch = int(version_parts[2])
 
+          # Bump based on type
           bump_type = "${{ steps.bump_type.outputs.bump }}"
           if bump_type == "major":
               major += 1
@@ -63,12 +69,15 @@ jobs:
           elif bump_type == "minor":
               minor += 1
               patch = 0
-          else:
+          else:  # patch
               patch += 1
 
           new_version = f"{major}.{minor}.{patch}"
+
+          # Update the version
           config['project']['version'] = new_version
 
+          # Save the updated toml
           with open('pyproject.toml', 'w') as f:
               toml.dump(config, f)
 
@@ -77,21 +86,9 @@ jobs:
               f.write(f"new_version={new_version}\n")
               f.write(f"current_version={current_version}\n")
           EOF
-
-      - name: Commit and push version bump
-        run: |
-          if ! git diff --quiet pyproject.toml; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add pyproject.toml
-            git commit -m "Bump version to ${{ steps.bump_version.outputs.new_version }}"
-            git push
-          else
-            echo "No version change detected, skipping commit."
-          fi
-
       - name: Build package
-        run: python -m build
-
+        run: |
+          pip install build
+          python -m build  # Could also be python -m build
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
