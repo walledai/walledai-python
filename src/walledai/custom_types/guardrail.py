@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 from typing_extensions import TypedDict, NotRequired
 
 class SafetyItem(TypedDict):
@@ -20,3 +20,7 @@ class GuardRailResponse(TypedDict):
     success: bool
     data: NotRequired[Optional[Data]]
     error: NotRequired[Optional[Exception]]
+
+class TextInput(TypedDict):
+    role: str
+    content: str

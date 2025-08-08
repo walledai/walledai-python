@@ -8,6 +8,9 @@ import aiohttp
 import time
 from walledai.constants import base_url
 from walledai.custom_types.pii import PIIResponse
+from walledai.custom_types.guardrail import TextInput
+from typing import List, Union
+
 class WalledRedact:
     ''' Redact'''
     count=1
@@ -52,19 +55,19 @@ class WalledRedact:
                 return resp_json
         except Exception as e:
             raise e
-    def guard(self,text:str)->PIIResponse:
+    def guard(self,text: Union[str, List[TextInput]])->PIIResponse:
         """
-        Runs pii on the given input text to evaluate safety.
+        Runs PII detection on the given input text to identify and format personal identifiable information.
 
         This method sends a request to the Walled AI API and returns a structured response
-        indicating with PII formatted data.
+        containing PII formatted data.
 
         Args:
-            text (str): The input text to evaluate.
+            text (str or list[TextInput]): The input text to evaluate. Can be a single string or a list of TextInput dicts for multi-turn or structured input.
+                TextInput format: {"role": str, "content": str}
 
         Returns:
-            PIIResponse: An object containing the evaluation results, including safety scores,
-            greeting matches, and compliance or PII flags.
+            PIIResponse: An object containing the evaluation results, including PII detection and formatting.
 
         If the request fails, a dictionary is returned with:
             - `success` (bool): Always False
@@ -76,23 +79,21 @@ class WalledRedact:
 
         """
         
-        async def _async_guard():
-            try:
+        def run_async_guard():
+            async def _async_guard():
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
                     response = await self._http_api_call(session, text)
                     return {"success": True, "data": response.get("data", {})}
-            except Exception as e:
-                raise e
-        
-        try:
             return asyncio.run(_async_guard())
-        except Exception as e:
-            print('Failed , error : ', e)
-            print('\nRetrying ... \n')
-            if self.count < self.retries:
-                self.count += 1
-                time.sleep(2)
-                return self.guard(text)
-            else:
-                print("Reached Maximum No of retries \n")
-                return {"success": False, "error": str(e)}
+
+        for attempt in range(self.retries):
+            try:
+                return run_async_guard()
+            except Exception as e:
+                print('Failed , error : ', e)
+                print('\nRetrying ... \n')
+                if attempt < self.retries - 1:
+                    time.sleep(2)
+                else:
+                    print("Reached Maximum No of retries \n")
+                    return {"success": False, "error": str(e)}

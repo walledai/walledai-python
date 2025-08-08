@@ -8,9 +8,11 @@ import csv
 import os
 import aiohttp
 import time
+
+from pandas import api
 from walledai.constants import base_url
-from walledai.custom_types.guardrail import GuardRailResponse
-from typing import List
+from walledai.custom_types.guardrail import GuardRailResponse, TextInput
+from typing import List, Union
 from typing_extensions import Literal
 
 
@@ -60,7 +62,6 @@ class WalledProtect:
         session,
         text,
         greetings_list: List[str] = ["Casual & Friendly", "Professional & Polite"],
-        text_type: str = "prompt",
         generic_safety_check: bool = True,
         compliance_list: List[str] = [],
         pii_list: List[Literal["Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth", "Unique Id", "Financial Data"]] = []
@@ -70,7 +71,6 @@ class WalledProtect:
         payload = {
             "text": text,
             "greetings_list": greetings_list,  # ["Casual & Friendly", "Professional & Polite"],
-            "text_type": text_type,
             "generic_safety_check": generic_safety_check,
             "compliance_list": compliance_list,
             "pii_list": pii_list
@@ -90,22 +90,20 @@ class WalledProtect:
     # added guard
     def guard(
         self,
-        text: str,
+        text: Union[str, List[TextInput]],
         greetings_list: List[str] = ["Casual & Friendly"],
-        text_type: str = "prompt",
         generic_safety_check: bool = True,
         compliance_list: List[str] = [],
         pii_list: List[Literal["Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth", "Unique Id", "Financial Data"]] = []
     ) -> GuardRailResponse:
         """
-        Runs guardrails on the given input text to evaluate safety, PII, compliance, and greetings.
+        Runs guardrails on the given input text(s) to evaluate safety, PII, compliance, and greetings.
 
         This method sends a request to the Walled AI HTTP API and returns a structured response.
 
         Args:
-            text (str): The input text to evaluate.
-            greetings_list (list[str]): A list of greeting category strings to match against. ex : ["Casual & Friendly", "Formal", "Professional"]. Defaults to ["Casual & Friendly"].
-            text_type (str, optional): The type of input text (e.g., "prompt", "completion"). Defaults to "prompt".
+            text (str or list[TextInput]): The input text to evaluate. Can be a single string or a list of TextInput dicts for multi-turn or structured input.
+            greetings_list (list[str], optional): A list of greeting category strings to match against. ex: ["Casual & Friendly", "Formal", "Professional"]. Defaults to ["Casual & Friendly"].
             generic_safety_check (bool, optional): Whether to enable general safety filters. Defaults to True.
             compliance_list (list[str], optional): A list of compliance categories to check against. Defaults to an empty list.
             pii_list (list[str], optional): A list of PII categories to check against. Defaults to an empty list.
@@ -128,34 +126,31 @@ class WalledProtect:
         if pii_list and not all(item in allowed_pii for item in pii_list):
             raise ValueError(f"'pii' must be empty or contain only: {sorted(allowed_pii)}")
 
-        async def _async_guard():
-            try:
+        def run_async_guard():
+            async def _async_guard():
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
                     response = await self._http_api_call(
                         session,
-                        text,
+                        text=text,
                         greetings_list=greetings_list,
-                        text_type=text_type,
                         generic_safety_check=generic_safety_check,
                         compliance_list=compliance_list,
                         pii_list=pii_list
                     )
                     return {"success": True, "data": response.get("data", {})}
-            except Exception as e:
-                raise e
-
-        try:
             return asyncio.run(_async_guard())
-        except Exception as e:
-            print('Failed , error : ', e)
-            print('\nRetrying ... \n')
-            if self.count < self.retries:
-                self.count += 1
-                time.sleep(2)
-                return self.guard(text, greetings_list, text_type, generic_safety_check, compliance_list, pii_list)
-            else:
-                print("Reached Maximum No of retries \n")
-                return {"success": False, "error": str(e)}
+
+        for attempt in range(self.retries):
+            try:
+                return run_async_guard()
+            except Exception as e:
+                print('Failed , error : ', e)
+                print('\nRetrying ... \n')
+                if attempt < self.retries - 1:
+                    time.sleep(2)
+                else:
+                    print("Reached Maximum No of retries \n")
+                    return {"success": False, "error": str(e)}
 
     def _extract_dynamic_columns_from_response(self, response_data):
         """Extract unique PII and greeting types from a response."""
@@ -254,7 +249,6 @@ class WalledProtect:
                 session,
                 text,
                 greetings_list=greeting_types,
-                text_type="prompt",
                 generic_safety_check=True,
                 compliance_list=[compliance_list] if compliance_list else [],
                 pii_list=pii_types
@@ -383,69 +377,60 @@ class WalledProtect:
         Returns:
             dict: A dictionary containing the evaluation results.
         """
-        try:
-            # Extract dynamic columns from CSV using enums (this will validate headers)
-            pii_types, greeting_types = self._extract_dynamic_columns_from_csv(ground_truth_file_path)
+        for attempt in range(self.retries):
+            try:
+                # Extract dynamic columns from CSV using enums (this will validate headers)
+                pii_types, greeting_types = self._extract_dynamic_columns_from_csv(ground_truth_file_path)
 
-            cases = self._load_guardrail_casesv2(ground_truth_file_path)
-            if not cases:
-                print("No test cases found in the ground truth file.")
-                return {"success": False, "error": "No test cases found."}
+                cases = self._load_guardrail_casesv2(ground_truth_file_path)
+                if not cases:
+                    print("No test cases found in the ground truth file.")
+                    return {"success": False, "error": "No test cases found."}
 
-            # Use the first row to get a valid API response for dynamic columns (optional, can skip)
-            # async with aiohttp.ClientSession(
-            #     timeout=aiohttp.ClientTimeout(total=30),
-            #     connector=aiohttp.TCPConnector(limit=concurrency_limit)
-            # ) as session:
-            #     first_response = await self._http_api_call(session, cases[0]['test_input'], greeting_types, "prompt", True, [cases[0]['compliance_topic']])
-            # pii_types, greeting_types = self._extract_dynamic_columns_from_response(first_response)
+                semaphore = asyncio.Semaphore(concurrency_limit)
 
-            semaphore = asyncio.Semaphore(concurrency_limit)
+                async def limited_process_case(case_func, *args):
+                    async with semaphore:
+                        return await case_func(*args)
 
-            async def limited_process_case(case_func, *args):
-                async with semaphore:
-                    return await case_func(*args)
+                results = []
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30), connector=aiohttp.TCPConnector(limit=concurrency_limit)) as session:
+                    tasks = [
+                        limited_process_case(self._process_case_http, session, row, pii_types, greeting_types)
+                        for row in cases
+                    ]
+                    print("Starting concurrent HTTP processing...")
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
+                valid_results = []
+                error_count = 0
+                for result in results:
+                    if isinstance(result, Exception):
+                        error_count += 1
+                        print(f"Task failed with exception: {result}")
+                    elif result is not None:
+                        valid_results.append(result)
+                    else:
+                        error_count += 1
 
-            results = []
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30), connector=aiohttp.TCPConnector(limit=concurrency_limit)) as session:
-                tasks = [
-                    limited_process_case(self._process_case_http, session, row, pii_types, greeting_types)
-                    for row in cases
-                ]
-                print("Starting concurrent HTTP processing...")
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-            valid_results = []
-            error_count = 0
-            for result in results:
-                if isinstance(result, Exception):
-                    error_count += 1
-                    print(f"Task failed with exception: {result}")
-                elif result is not None:
-                    valid_results.append(result)
+                print(f"Completed processing: {len(valid_results)} successful, {error_count} failed")
+
+                # Writing results to csv
+                self._write_results(model_output_file_path, valid_results, pii_types, greeting_types)
+
+                # Writing Metrics
+                self._write_column_metrics_csv(ground_truth_file_path, model_output_file_path, metrics_output_file_path, pii_types, greeting_types)
+                print(f"Results written to {model_output_file_path}")
+                print(f"Metrics written to {metrics_output_file_path}")
+                return {"success": True}
+            except ValueError as e:
+                # Handle CSV validation errors specifically
+                print(f"CSV validation error: {e}")
+                return {"success": False, "error": str(e)}
+            except Exception as e:
+                print('Failed , error : ', e)
+                print('\nRetrying ... \n')
+                if attempt < self.retries - 1:
+                    time.sleep(2)
                 else:
-                    error_count += 1
-
-            print(f"Completed processing: {len(valid_results)} successful, {error_count} failed")
-
-            # Writing results to csv
-            self._write_results(model_output_file_path, valid_results, pii_types, greeting_types)
-
-            # Writing Metrics
-            self._write_column_metrics_csv(ground_truth_file_path, model_output_file_path, metrics_output_file_path, pii_types, greeting_types)
-            print(f"Results written to {model_output_file_path}")
-            print(f"Metrics written to {metrics_output_file_path}")
-            return {"success": True}
-        except ValueError as e:
-            # Handle CSV validation errors specifically
-            print(f"CSV validation error: {e}")
-            return {"success": False, "error": str(e)}
-        except Exception as e:
-            print('Failed , error : ', e)
-            print('\nRetrying ... \n')
-            if self.count < self.retries:
-                self.count += 1
-                time.sleep(2)
-                return await self.eval(ground_truth_file_path, model_output_file_path, metrics_output_file_path, concurrency_limit)
-            else:
-                print("Reached Maximum No of retries \n")
-                return {"success": False, "error": e}
+                    print("Reached Maximum No of retries \n")
+                    return {"success": False, "error": str(e)}
