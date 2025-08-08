@@ -22,7 +22,6 @@ redact_client = WalledRedact("your_api_key", retries=3)  # for redaction
 response = client.guard(
     text="Hello, How are you", 
     greetings_list=["generalgreetings"], 
-    text_type="prompt", 
     generic_safety_check=True,
     compliance_list=[],
     pii_list=[]
@@ -33,9 +32,8 @@ print(response)
 Processes the text using Walled AI's protection mechanisms.
 
 #### Parameters:
-- **`text`** (*str*, required): The input text to be processed.
+- **`text`** (*str* or *list of dict*, required): The input text to be processed. Can be a single string or a list of dicts (e.g., for multi-turn input).
 - **`greetings_list`** (*list of str*, optional): A list of predefined greetings categories. ex: ["Casual & Friendly", "Formal", "Professional"]. Defaults to ["Casual & Friendly"]
-- **`text_type`** (*str*, optional): Type of text being processed. Defaults to `"prompt"`.
 - **`generic_safety_check`** (*bool*, optional): Whether to apply a general safety filter. Defaults to `True`.
 - **`compliance_list`** (*list of str*, optional): A list of compliances.
 - **`pii_list`** (*list of str*, optional): Must be empty or contain only the following values: `"Person's Name"`, `"Address"`, `"Email Id"`, `"Contact No"`, `"Date Of Birth"`, `"Unique Id"`, `"Financial Data"`.
@@ -45,10 +43,25 @@ Processes the text using Walled AI's protection mechanisms.
 response = client.guard(
     text="Hello, How are you", 
     greetings_list=["generalgreetings"], 
-    text_type="prompt", 
     generic_safety_check=True,
     pii_list=[],
     compliance_list=["Medical", "Finance"]
+)
+print(response)
+```
+
+#### Example: Multi-turn Input (Conversation)
+You can also pass a list of dicts (e.g., for chat or multi-turn input):
+
+```python
+response = client.guard(
+    text=[
+        {"role": "user", "content": "Hi there, can you help me with some information?"},
+        {"role": "assistant", "content": "Of course! What would you like to know?"},
+        {"role": "user", "content": "Can you suggest some healthy habits for daily life?"}
+    ],
+    greetings_list=["Casual & Friendly"],
+    generic_safety_check=True
 )
 print(response)
 ```
@@ -80,15 +93,29 @@ If an error occurs, the SDK will retry the request up to the specified number of
 
 ## Walled Redact
 
-Processes the text using Walled AI's redaction mechanisms.
+Processes the text using Walled AI's PII detection and redaction mechanisms.
 
 #### Parameters:
-- **`text`** (*str*, required): The input text to be processed.
+- **`text`** (*str* or *list of dict*, required): The input text to be processed. Can be a single string or a list of dicts (e.g., for multi-turn input).
 
 #### Example Usage:
 ```python
 response = redact_client.guard(
     text="Hello, How are you Henry", 
+)
+print(response)
+```
+
+#### Example: Multi-turn Input (Conversation)
+You can also pass a list of dicts (e.g., for chat or multi-turn input):
+
+```python
+response = redact_client.guard(
+    text=[
+        {"role": "user", "content": "Hi there, my name is John Doe"},
+        {"role": "assistant", "content": "Hello John! How can I help you today?"},
+        {"role": "user", "content": "Can you help me with my email: john.doe@example.com"}
+    ]
 )
 print(response)
 ```
