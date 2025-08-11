@@ -52,6 +52,8 @@ class WalledRedact:
         try:
             async with session.post(url, json=payload, headers=headers) as response:
                 resp_json = await response.json()
+                if response.status != 200:
+                    raise Exception(f"Request failed with status {response.status}: {resp_json.get('message', 'Unknown error')}")
                 return resp_json
         except Exception as e:
             raise e
