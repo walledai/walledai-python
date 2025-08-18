@@ -1,6 +1,6 @@
-# Walled AI SDK
+# Walled AI SDK (Python)
 
-A Python SDK for interacting with Walled AI.
+A Python SDK for interacting with Walled AI's Guardrail and PII Redaction APIs.
 
 ## Installation
 
@@ -8,16 +8,25 @@ A Python SDK for interacting with Walled AI.
 pip install walledai
 ```
 
-## Usage
+## Quick Start
+
+### Import and Initialize
 
 ```python
 from walledai import WalledProtect, WalledRedact
-# Initialize the client
+
+# Initialize WalledProtect for content moderation and safety checks
 client = WalledProtect("your_api_key", retries=3)  # retries is optional
-redact_client = WalledRedact("your_api_key", retries=3)  # for redaction
+
+# Initialize WalledRedact for PII detection and masking
+redact_client = WalledRedact("your_api_key", retries=3)  # retries is optional
 ```
 
-## Walled Protect
+## WalledProtect - Content Moderation & Safety
+
+The `WalledProtect` class provides comprehensive content moderation capabilities including safety checks, compliance validation, PII detection, and greeting analysis.
+
+### Basic Content Analysis
 
 ```python
 response = client.guard(
@@ -30,117 +39,248 @@ response = client.guard(
 print(response)
 ```
 
-Processes the text using Walled AI's protection mechanisms.
-
-#### Parameters:
-
-- **`text`** (_str_ or _list of dict_, required): The input text to be processed. Can be a single string or a list of dicts (e.g., for multi-turn input).
-- **`greetings_list`** (_list of str_, optional): A list of predefined greetings categories. ex: ["Casual & Friendly", "Formal", "Professional"]. Defaults to ["Casual & Friendly"]
-- **`generic_safety_check`** (_bool_, optional): Whether to apply a general safety filter. Defaults to `True`.
-- **`compliance_list`** (_list of str_, optional): A list of compliances.
-- **`pii_list`** (_list of str_, optional): Must be empty or contain only the following values: `"Person's Name"`, `"Address"`, `"Email Id"`, `"Contact No"`, `"Date Of Birth"`, `"Unique Id"`, `"Financial Data"`.
-
-#### Example Usage:
+### Multi-turn Conversation Analysis
 
 ```python
+conversation = [
+    {"role": "user", "content": "Hi, my name is John Doe. I live at 123 Maple Street and my email is john.doe@example.com."},
+    {"role": "assistant", "content": "Hello John, thanks for sharing. How can I assist you today?"},
+]
+
 response = client.guard(
-    text="Hello, How are you",
-    greetings_list=["Casual & Friendly"],
-    generic_safety_check=True,
-    pii_list=[],
-    compliance_list=["Medical", "Finance"]
-)
-print(response)
-```
-
-#### Example: Multi-turn Input (Conversation)
-
-You can also pass a list of dicts (e.g., for chat or multi-turn input):
-
-```python
-response = client.guard(
-    text=[
-        {"role": "user", "content": "Hi there, can you help me with some information?"},
-        {"role": "assistant", "content": "Of course! What would you like to know?"},
-        {"role": "user", "content": "Can you suggest some healthy habits for daily life?"}
+    text=conversation,
+    greetings_list=[
+       "Casual & Friendly",
+       "Professional & Polite"
     ],
-    greetings_list=["Casual & Friendly"],
-    generic_safety_check=True
+    generic_safety_check=True,
+    compliance_list=["Medical", "Finance", "Legal"],
+    pii_list=[
+        "Person's Name",
+        "Address",
+        "Email Id",
+        "Contact No",
+        "Date Of Birth",
+        "Unique Id",
+        "Financial Data"
+    ]
 )
 print(response)
 ```
 
-### Example Responses
+### Parameters
 
-The response returned by the `guard` method is a dictionary.
+#### Guard Method Parameters
 
-#### Successful Response
+| Parameter             | Type                    | Required | Default                      | Description |
+|-----------------------|-------------------------|----------|------------------------------|-------------|
+| `text`                | `str \| list[dict]`     | Yes      | -                            | Input text or conversation array |
+| `greetings_list`      | `list[str]`             | No       | `["Casual & Friendly"]`      | Greeting types to check |
+| `generic_safety_check`| `bool`                  | No       | `True`                       | Enable safety filtering |
+| `compliance_list`     | `list[str]`             | No       | `[]`                         | Compliance categories to check |
+| `pii_list`            | `list[str]`             | No       | `[]`                         | PII categories to detect |
+
+#### Allowed PII Types
+
+| PII Type          | Description |
+|-------------------|-------------|
+| `"Person's Name"` | Individual's full or partial name |
+| `"Address"`       | Physical or mailing addresses |
+| `"Email Id"`      | Email addresses |
+| `"Contact No"`    | Phone numbers and contact information |
+| `"Date Of Birth"` | Birth dates and age-related information |
+| `"Unique Id"`     | Social security numbers, IDs, licenses |
+| `"Financial Data"`| Credit cards, bank accounts, financial info |
+
+#### Allowed Greeting Types
+
+| Greeting Type            | Description |
+|--------------------------|-------------|
+| `"Casual & Friendly"`    | Informal, warm greetings |
+| `"Professional & Polite"`| Formal, business-appropriate greetings |
+
+### Response Format
+
+#### Successful Response Structure
+
+| Field      | Type   | Description |
+|------------|--------|-------------|
+| `success`  | `bool` | Indicates if the request was processed successfully |
+| `data`     | `dict` | Contains the analysis results |
+
+#### Data Object Structure
+
+**Safety Section:**
+
+| Field             | Type    | Description |
+|-------------------|---------|-------------|
+| `safety`          | `str`   | Type of safety check performed |
+| `isSafe`          | `bool`  | Whether the content passed safety checks |
+| `score`           | `float` | Safety confidence score (if available) |
+| `method`          | `str`   | Safety detection method used |
+| `processing_time` | `float` | Time taken for safety analysis in seconds |
+| `models_used`     | `list`  | List of AI models used for safety evaluation |
+
+**Compliance Section:**
+
+| Field       | Type   | Description |
+|-------------|--------|-------------|
+| `topic`     | `str`  | The compliance topic being checked |
+| `isOnTopic` | `bool` | Whether the content relates to the compliance topic |
+| `error`     | `str`  | Any error encountered during compliance check |
+
+**PII Section:**
+
+| Field       | Type   | Description |
+|-------------|--------|-------------|
+| `pii_type`  | `str`  | Type of PII being detected |
+| `isPresent` | `bool` | Whether this PII type was found in the content |
+| `error`     | `str`  | Any error encountered during PII detection |
+
+**Greetings Section:**
+
+| Field           | Type   | Description |
+|-----------------|--------|-------------|
+| `greeting_type` | `str`  | Type of greeting being analyzed |
+| `isPresent`     | `bool` | Whether this greeting type was detected |
+| `error`         | `str`  | Any error encountered during greeting analysis |
+
+#### Example Response
 
 ```python
 {
-    "success":True
-    "data":{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "safety": [
+    'success': True,
+    'data': {
+        'safety': [
             {
-                "safety": "generic",
-                "isSafe": True,
-                "score": null,
-                "method": "en-safety",
-                "processing_time": 0.18735170364379883,
-                "models_used": [
-                    "walled_e_guard_a"
-                ]
+                'safety': 'generic',
+                'isSafe': True,
+                'score': None,
+                'method': 'en-safety',
+                'processing_time': 0.5231285095214844,
+                'models_used': ['walled_e_guard_a']
             }
         ],
-        "compliance": [
+        'compliance': [
             {
-                "topic": "ask about medical",
-                "isOnTopic": false,
-                "error": null
+                'topic': 'medical',
+                'isOnTopic': False,
+                'error': None
             }
         ],
-        "pii": [
+        'pii': [
             {
-                "pii_type": "Email Id",
-                "isPresent": false,
-                "error": null
+                'pii_type': "Person's Name",
+                'isPresent': False,
+                'error': None
             }
         ],
-        "greetings": [
+        'greetings': [
             {
-                "greeting_type": "Professional & Polite",
-                "isPresent": false,
-                "error": null
+                'greeting_type': 'Casual & Friendly',
+                'isPresent': False,
+                'error': None
             }
         ]
     }
-}
 }
 ```
 
 #### Error Response
 
-If an error occurs, the SDK will retry the request up to the specified number of retries (`retries` parameter in `WalledProtect`) or default retry number. If the retries are exhausted, it will return an error response.
+| Field     | Type   | Description |
+|-----------|--------|-------------|
+| `success` | `bool` | Always `False` for error responses |
+| `error`   | `str`  | Description of the error that occurred |
 
 ```python
 {
-    "success": false,
-    "error": "Invalid API key provided."
+    'success': False,
+    'error': 'Request failed with status 403: User is not authorized to access this resource with an explicit deny'
 }
 ```
 
-## Walled Redact
+### Evaluation
 
-Processes the text using Walled AI's PII detection and redaction mechanisms.
+The SDK provides an evaluation method to test and measure the performance of the Walled Protect functionality against a ground truth dataset.
 
-#### Parameters:
+#### Batch Evaluation with CSV
 
-- **`text`** (_str_ or _list of dict_, required): The input text to be processed. Can be a single string or a list of dicts (e.g., for multi-turn input).
+```python
+import asyncio
+from walledai import WalledProtect
 
-#### Example Usage:
+client = WalledProtect("your_api_key", retries=3)
+
+# Run evaluation
+asyncio.run(client.eval(
+    ground_truth_file_path="./unit_test_cases.csv",
+    model_output_file_path="./model_results.csv",
+    metrics_output_file_path="./metrics.csv",
+    concurrency_limit=20
+))
+```
+
+#### Eval Method Parameters
+
+| Parameter                | Type  | Required | Default | Description |
+|--------------------------|-------|----------|---------|-------------|
+| `ground_truth_file_path` | `str` | Yes      | -       | Path to CSV with test cases |
+| `model_output_file_path` | `str` | Yes      | -       | Path to save results |
+| `metrics_output_file_path`| `str` | Yes      | -       | Path to save metrics |
+| `concurrency_limit`      | `int` | No       | `20`    | Max concurrent requests |
+
+#### Ground Truth CSV Format
+
+**Required Columns (must be present in this order):**
+
+| Column Name          | Type   | Description |
+|----------------------|--------|-------------|
+| `test_input`         | `str`  | The input text to be processed |
+| `compliance_topic`   | `str`  | The compliance topic for the test case |
+| `compliance_isOnTopic` | `bool` | Whether the input is on the specified compliance topic (`TRUE` or `FALSE`) |
+
+**Optional Columns (can be included as needed):**
+
+| Column Name            | Type   | Description |
+|------------------------|--------|-------------|
+| `Person's Name`        | `bool` | Whether a person's name is present (`TRUE` or `FALSE`) |
+| `Address`              | `bool` | Whether an address is present (`TRUE` or `FALSE`) |
+| `Email Id`             | `bool` | Whether an email ID is present (`TRUE` or `FALSE`) |
+| `Contact No`           | `bool` | Whether a contact number is present (`TRUE` or `FALSE`) |
+| `Date Of Birth`        | `bool` | Whether a date of birth is present (`TRUE` or `FALSE`) |
+| `Unique Id`            | `bool` | Whether a unique ID is present (`TRUE` or `FALSE`) |
+| `Financial Data`       | `bool` | Whether financial data is present (`TRUE` or `FALSE`) |
+| `Casual & Friendly`    | `bool` | Whether the greeting is casual & friendly (`TRUE` or `FALSE`) |
+| `Professional & Polite`| `bool` | Whether the greeting is professional & polite (`TRUE` or `FALSE`) |
+
+See [example unit test file](https://docs.google.com/spreadsheets/d/136QaJQJr5KACXjuTPr86a2-XIFq8APy8XKVg6J00X9U/edit?usp=sharing) for a sample ground truth file.
+
+#### Evaluation Features
+
+- **CSV-based testing**: Load test cases from CSV files
+- **Concurrent processing**: Configurable concurrency limits
+- **Automatic retries**: Built-in retry logic with delays
+- **Metrics generation**: Accuracy, precision, recall, and F1 scores
+- **Dynamic column support**: Automatically detects PII and greeting columns
+
+#### Output Files
+
+1. **Model Results CSV**: Contains the actual model predictions for each test case, including:
+   - All columns present in the ground truth file
+   - An additional `is_safe` column with `TRUE` or `FALSE` values indicating whether the input passed the safety evaluation
+
+2. **Metrics CSV**: Contains evaluation metrics including:
+   - Accuracy scores
+   - Precision and recall
+   - F1 scores
+   - Confusion matrices
+
+## WalledRedact - PII Detection & Masking
+
+The `WalledRedact` class detects and masks personally identifiable information (PII) in text, replacing sensitive data with placeholders.
+
+### Basic PII Masking
 
 ```python
 response = redact_client.guard(
@@ -149,9 +289,7 @@ response = redact_client.guard(
 print(response)
 ```
 
-#### Example: Multi-turn Input (Conversation)
-
-You can also pass a list of dicts (e.g., for chat or multi-turn input):
+### Multi-turn Conversation PII Masking
 
 ```python
 response = redact_client.guard(
@@ -164,138 +302,116 @@ response = redact_client.guard(
 print(response)
 ```
 
-### Example Responses
+### Parameters
 
-The response returned by the `guard` method is a dictionary.
+| Parameter | Type                | Required | Description |
+|-----------|---------------------|----------|-------------|
+| `text`    | `str \| list[dict]` | Yes      | Text or conversation to process |
 
-#### Successful Response
+### Response Format
+
+#### Successful Response Structure
+
+| Field      | Type   | Description |
+|------------|--------|-------------|
+| `success`  | `bool` | Indicates if the request was processed successfully |
+| `data`     | `dict` | Contains the redaction results |
+
+#### Data Object Structure
+
+| Field         | Type   | Description |
+|---------------|--------|-------------|
+| `status`      | `str`  | Response status ("success" or "error") |
+| `success`     | `bool` | Whether the redaction was successful |
+| `statusCode`  | `int`  | Status code of the operation |
+| `remark`      | `str`  | Additional remarks about the operation |
+| `input`       | `list` | Original input text/conversation |
+| `masked_text` | `list` | Text with PII replaced by placeholders |
+| `mapping`     | `dict` | Mapping of placeholders to original PII values |
+| `error`       | `str`  | Any error encountered during processing |
+
+#### Example Response
 
 ```python
-
 {
-    success:True,
-    data :{
-    "status": "success",
+    "success": True,
     "data": {
-        "success": true,
-        "statusCode": 2001,
-        "remark": "guardrails success type 21",
-        "input": [
-            {
-                "role": "user",
-                "content": "Hi there, my name is John Doe"
+        "status": "success",
+        "data": {
+            "success": True,
+            "statusCode": 2001,
+            "remark": "guardrails success type 21",
+            "input": [
+                {
+                    "role": "user",
+                    "content": "Hi there, my name is John Doe"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Hello John! How can I help you today?"
+                },
+                {
+                    "role": "user",
+                    "content": "Can you help me with my email: john.doe@example.com"
+                }
+            ],
+            "masked_text": [
+                {
+                    "role": "user",
+                    "content": "Hi there, my name is [Person_1]"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Hello [Person_1]! How can I help you today?"
+                },
+                {
+                    "role": "user",
+                    "content": "Can you help me with my email: [Email_1]"
+                }
+            ],
+            "mapping": {
+                "[Person_1]": "John Doe",
+                "[Email_1]": "john.doe@example.com"
             },
-            {
-                "role": "assistant",
-                "content": "Hello John! How can I help you today?"
-            },
-            {
-                "role": "user",
-                "content": "Can you help me with my email: john.doe@example.com"
-            }
-        ],
-        "masked_text": [
-            {
-                "role": "user",
-                "content": "Hi there, my name is [Person_1]"
-            },
-            {
-                "role": "assistant",
-                "content": "Hello [Person_1]! How can I help you today?"
-            },
-            {
-                "role": "user",
-                "content": "Can you help me with my email: [Email_1]"
-            }
-        ],
-        "mapping": {
-            "[Person_1]": "John Doe",
-            "[Email_1]": "john.doe@example.com"
-        },
-        "error": null
+            "error": None
+        }
     }
-}
 }
 ```
 
 #### Error Response
 
-If an error occurs, the SDK will retry the request up to the specified number of retries (`retries` parameter in `WalledRedact`) or default retry number. If the retries are exhausted, it will return an error response.
+| Field     | Type   | Description |
+|-----------|--------|-------------|
+| `success` | `bool` | Always `False` for error responses |
+| `error`   | `str`  | Description of the error that occurred |
 
 ```python
 {
-    "success": false,
+    "success": False,
     "error": "Invalid API key provided."
 }
 ```
 
-## Evaluation
+## Configuration Options
 
-The SDK provides an evaluation method to test and measure the performance of the Walled Protect functionality against a ground truth dataset.
+### WalledProtect Configuration
 
-#### Parameters:
-
-- **`ground_truth_file_path`** (_str_, required): Path to the CSV file containing test cases with expected results.
-- **`model_output_file_path`** (_str_, required): Path where the model's output results will be saved.
-- **`metrics_output_file_path`** (_str_, required): Path where the evaluation metrics will be saved.
-- **`concurrency_limit`** (_int_, optional): Maximum number of concurrent requests. Defaults to 20.
-
-#### Example Usage:
+| Parameter | Type  | Required | Default | Description |
+|-----------|-------|----------|---------|-------------|
+| `api_key` | `str` | Yes      | -       | Your Walled AI API key |
+| `retries` | `int` | No       | `3`     | Number of retry attempts |
 
 ```python
-# Run evaluation
-import asyncio
-from walledai import WalledProtect
-
-client = WalledProtect("your_api_key", retries=3)  # retries is optional
-asyncio.run(client.eval(
-    ground_truth_file_path="./unit_test_cases.csv",
-    model_output_file_path="./model_results.csv",
-    metrics_output_file_path="./metrics.csv",
-    concurrency_limit=20
-))
+client = WalledProtect("your_api_key", retries=3)
 ```
 
-### Ground Truth CSV Format
+### WalledRedact Configuration
 
-The ground truth CSV file has flexible column requirements:
+| Parameter | Type  | Required | Default | Description |
+|-----------|-------|----------|---------|-------------|
+| `api_key` | `str` | Yes      | -       | Your Walled AI API key |
+| `retries` | `int` | No       | `3`     | Number of retry attempts |
 
-#### Required Columns (must be present in this order):
-
-- `test_input`: The input text to be processed.
-- `compliance_topic`: The compliance topic for the test case.
-- `compliance_isOnTopic`: Whether the input is on the specified compliance topic (`TRUE` or `FALSE`).
-
-#### Optional Columns (can be included as needed):
-
-- `Person's Name`: Whether a person's name is present (`TRUE` or `FALSE`).
-- `Address`: Whether an address is present (`TRUE` or `FALSE`).
-- `Email Id`: Whether an email ID is present (`TRUE` or `FALSE`).
-- `Contact No`: Whether a contact number is present (`TRUE` or `FALSE`).
-- `Date Of Birth`: Whether a date of birth is present (`TRUE` or `FALSE`).
-- `Unique Id`: Whether a unique ID is present (`TRUE` or `FALSE`).
-- `Financial Data`: Whether financial data is present (`TRUE` or `FALSE`).
-- `Casual & Friendly`: Whether the greeting is casual & friendly (`TRUE` or `FALSE`).
-- `Professional & Polite`: Whether the greeting is professional & polite (`TRUE` or `FALSE`).
-
-**Notes:**
-
-- Only the first 3 columns are mandatory and must be present in the exact order specified above.
-- Optional columns can be included in any order after the required columns.
-- The values for boolean columns should be `TRUE` or `FALSE` (case-insensitive).
-- Missing optional columns will not result in an error during evaluation.
-
-#### Example of a valid ground truth file
-
-See [`example_unit_test_file`](https://docs.google.com/spreadsheets/d/136QaJQJr5KACXjuTPr86a2-XIFq8APy8XKVg6J00X9U/edit?usp=sharing) for a sample ground_truth_file.
-
-### Output Files
-
-1. **Model Results CSV**: Contains the actual model predictions for each test case. This file will include:
-   - All columns present in the ground truth file
-   - An additional `is_safe` column with `TRUE` or `FALSE` values indicating whether the input passed the safety evaluation
-2. **Metrics CSV**: Contains evaluation metrics including:
-   - Accuracy scores
-   - Precision and recall
-   - F1 scores
-   - Confusion matrices
+```python
+redact_client = WalledRedact("your_api
