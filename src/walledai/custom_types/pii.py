@@ -17,5 +17,8 @@ class Data(TypedDict, total=False):  # total=False allows optional keys
 
 class PIIResponse(TypedDict):
     success: bool
+    statusCode:int
+    message:NotRequired[Optional[str]]
+    errorCode:NotRequired[Optional[str]]
     data: NotRequired[Optional[Data]]
-    error: NotRequired[Optional[Exception]]
+    details: NotRequired[Optional[Any]]

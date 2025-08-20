@@ -106,6 +106,7 @@ print(response)
 | Field      | Type   | Description |
 |------------|--------|-------------|
 | `success`  | `bool` | Indicates if the request was processed successfully |
+|`statusCode`|  `int` | Http Status Code
 | `data`     | `dict` | Contains the analysis results |
 
 #### Data Object Structure
@@ -143,43 +144,81 @@ print(response)
 |-----------------|--------|-------------|
 | `greeting_type` | `str`  | Type of greeting being analyzed |
 | `isPresent`     | `bool` | Whether this greeting type was detected |
-| `error`         | `str`  | Any error encountered during greeting analysis |
+| `error`         | `int`  | Any error encountered during greeting analysis |
 
 #### Example Response
 
 ```python
 {
-    'success': True,
-    'data': {
-        'safety': [
+    "success": true,
+    "statusCode": 200,
+    "data": {
+        "safety": [
             {
-                'safety': 'generic',
-                'isSafe': True,
-                'score': None,
-                'method': 'en-safety',
-                'processing_time': 0.5231285095214844,
-                'models_used': ['walled_e_guard_a']
+                "safety": "generic",
+                "isSafe": false,
+                "score": null,
+                "method": "en-safety",
+                "processing_time": 0.41751790046691895,
+                "models_used": [
+                    "walled_e_guard_a"
+                ]
             }
         ],
-        'compliance': [
+        "compliance": [
             {
-                'topic': 'medical',
-                'isOnTopic': False,
-                'error': None
+                "topic": "sdfsdf",
+                "isOnTopic": false,
+                "error": null
             }
         ],
-        'pii': [
+        "pii": [
             {
-                'pii_type': "Person's Name",
-                'isPresent': False,
-                'error': None
+                "pii_type": "Person's Name",
+                "isPresent": true,
+                "error": null
+            },
+            {
+                "pii_type": "Address",
+                "isPresent": true,
+                "error": null
+            },
+            {
+                "pii_type": "Email Id",
+                "isPresent": true,
+                "error": null
+            },
+            {
+                "pii_type": "Contact No",
+                "isPresent": false,
+                "error": null
+            },
+            {
+                "pii_type": "Date Of Birth",
+                "isPresent": false,
+                "error": null
+            },
+            {
+                "pii_type": "Unique Id",
+                "isPresent": false,
+                "error": null
+            },
+            {
+                "pii_type": "Financial Data",
+                "isPresent": false,
+                "error": null
             }
         ],
-        'greetings': [
+        "greetings": [
             {
-                'greeting_type': 'Casual & Friendly',
-                'isPresent': False,
-                'error': None
+                "greeting_type": "Casual & Friendly",
+                "isPresent": true,
+                "error": null
+            },
+            {
+                "greeting_type": "Professional & Polite",
+                "isPresent": true,
+                "error": null
             }
         ]
     }
@@ -191,15 +230,29 @@ print(response)
 | Field     | Type   | Description |
 |-----------|--------|-------------|
 | `success` | `bool` | Always `False` for error responses |
-| `error`   | `str`  | Description of the error that occurred |
+| `statusCode`| `int`  | Http Status Code for errors |
+| `errorCode`| `str`| Main Model Error Code (for guardrail/pii)|
+| `message`|`str`| Description of Error|
+| `details`| `dic`| Details of Error|
 
 ```python
 {
-    'success': False,
-    'error': 'Request failed with status 403: User is not authorized to access this resource with an explicit deny'
+    "success": false,
+    "statusCode": 400,
+    "errorCode": "INVALID_GREETING_TYPE",
+    "message": "Invalid greeting types: ['Casual & Friendlyy']. Must be one of: ['Casual & Friendly', 'Professional & Polite']",
+    "details": {
+        "invalid_greetings": [
+            "Casual"
+        ],
+        "valid_greetings": [
+            "Casual & Friendly",
+            "Professional & Polite"
+        ]
+    }
 }
 ```
-
+> See [documentation](https://docs.walled.ai/error-codes-1302667m0) for understanding of error codes 
 ### Evaluation
 
 The SDK provides an evaluation method to test and measure the performance of the Walled Protect functionality against a ground truth dataset.

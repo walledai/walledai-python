@@ -81,14 +81,11 @@ class WalledProtect:
             "Authorization": f"Bearer {self.api_key}"  # Adjust as needed for your API
         }
 
-        try:
-            async with session.post(url, json=payload, headers=headers) as response:
-                resp_json = await response.json()
-                if response.status != 200:
-                    raise Exception(f"Request failed with status {response.status}: {resp_json.get('message', 'Unknown error')}")
-                return resp_json
-        except Exception as e:
-            raise e
+        async with session.post(url, json=payload, headers=headers) as response:
+            resp_json = await response.json()
+            if response.status != 200:
+                raise Exception(resp_json)  # raise the JSON directly
+            return resp_json
     # added guard
     def guard(
         self,
@@ -139,7 +136,7 @@ class WalledProtect:
                         compliance_list=compliance_list,
                         pii_list=pii_list
                     )
-                    return {"success": True, "data": response.get("data", {})}
+                    return response#{"success": True, "data": response.get("data", {})}
             return asyncio.run(_async_guard())
 
         for attempt in range(self.retries):
@@ -152,7 +149,7 @@ class WalledProtect:
                     time.sleep(2)
                 else:
                     print("Reached Maximum No of retries \n")
-                    return {"success": False, "error": str(e)}
+                    return e
 
     def _extract_dynamic_columns_from_response(self, response_data):
         """Extract unique PII and greeting types from a response."""

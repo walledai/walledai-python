@@ -48,15 +48,11 @@ class WalledRedact:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"
         }
-
-        try:
-            async with session.post(url, json=payload, headers=headers) as response:
-                resp_json = await response.json()
-                if response.status != 200:
-                    raise Exception(f"Request failed with status {response.status}: {resp_json.get('message', 'Unknown error')}")
-                return resp_json
-        except Exception as e:
-            raise e
+        async with session.post(url, json=payload, headers=headers) as response:
+            resp_json = await response.json()
+            if response.status != 200:
+                raise Exception(resp_json)
+            return resp_json
     def guard(self,text: Union[str, List[TextInput]])->PIIResponse:
         """
         Runs PII detection on the given input text to identify and format personal identifiable information.
@@ -85,7 +81,7 @@ class WalledRedact:
             async def _async_guard():
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
                     response = await self._http_api_call(session, text)
-                    return {"success": True, "data": response.get("data", {})}
+                    return response
             return asyncio.run(_async_guard())
 
         for attempt in range(self.retries):
@@ -98,4 +94,4 @@ class WalledRedact:
                     time.sleep(2)
                 else:
                     print("Reached Maximum No of retries \n")
-                    return {"success": False, "error": str(e)}
+                    return e    
