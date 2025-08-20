@@ -252,7 +252,7 @@ print(response)
     }
 }
 ```
-> See [documentation](https://docs.walled.ai/error-codes-1302667m0) for understanding of error codes 
+> Checkout [documentation](https://docs.walled.ai/error-codes-1302667m0) for understanding of error codes 
 ### Evaluation
 
 The SDK provides an evaluation method to test and measure the performance of the Walled Protect functionality against a ground truth dataset.
