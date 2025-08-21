@@ -233,7 +233,7 @@ print(response)
 | `statusCode`| `int`  | Http Status Code for errors |
 | `errorCode`| `str`| Main Model Error Code (for guardrail/pii)|
 | `message`|`str`| Description of Error|
-| `details`| `dic`| Details of Error|
+| `details`| `dict`| Details of Error|
 
 ```python
 {
@@ -364,11 +364,11 @@ print(response)
 ### Response Format
 
 #### Successful Response Structure
-
 | Field      | Type   | Description |
 |------------|--------|-------------|
 | `success`  | `bool` | Indicates if the request was processed successfully |
-| `data`     | `dict` | Contains the redaction results |
+|`statusCode`|  `int` | Http Status Code
+| `data`     | `dict` | Contains the analysis results |
 
 #### Data Object Structure
 
@@ -387,47 +387,38 @@ print(response)
 
 ```python
 {
-    "success": True,
+    "success": true,
+    "statusCode": 200,
     "data": {
-        "status": "success",
-        "data": {
-            "success": True,
-            "statusCode": 2001,
-            "remark": "guardrails success type 21",
-            "input": [
-                {
-                    "role": "user",
-                    "content": "Hi there, my name is John Doe"
-                },
-                {
-                    "role": "assistant",
-                    "content": "Hello John! How can I help you today?"
-                },
-                {
-                    "role": "user",
-                    "content": "Can you help me with my email: john.doe@example.com"
-                }
-            ],
-            "masked_text": [
-                {
-                    "role": "user",
-                    "content": "Hi there, my name is [Person_1]"
-                },
-                {
-                    "role": "assistant",
-                    "content": "Hello [Person_1]! How can I help you today?"
-                },
-                {
-                    "role": "user",
-                    "content": "Can you help me with my email: [Email_1]"
-                }
-            ],
-            "mapping": {
-                "[Person_1]": "John Doe",
-                "[Email_1]": "john.doe@example.com"
+        "success": true,
+        "statusCode": 2001,
+        "remark": "guardrails success type 21",
+        "input": [
+            {
+                "role": "user",
+                "content": "Hi, I'm John Doe. I live at 123 Maple Street and my email is john.doe@example.com"
             },
-            "error": None
-        }
+            {
+                "role": "assistant",
+                "content": "Hello John, how can I assist you today?"
+            }
+        ],
+        "masked_text": [
+            {
+                "role": "user",
+                "content": "Hi, I’m [Person_1]. I live at [Address_1] and my email is [Email_1]"
+            },
+            {
+                "role": "assistant",
+                "content": "Hello [Person_1], how can I assist you today?"
+            }
+        ],
+        "mapping": {
+            "[Person_1]": "John Doe",
+            "[Address_1]": "123 Maple Street",
+            "[Email_1]": "john.doe@example.com"
+        },
+        "error": null
     }
 }
 ```
@@ -437,14 +428,31 @@ print(response)
 | Field     | Type   | Description |
 |-----------|--------|-------------|
 | `success` | `bool` | Always `False` for error responses |
-| `error`   | `str`  | Description of the error that occurred |
+| `statusCode`| `int`  | Http Status Code for errors |
+| `errorCode`| `str`| Main Model Error Code (for guardrail/pii)|
+| `message`|`str`| Description of Error|
+| `details`| `dict`| Details of Error|
 
 ```python
 {
-    "success": False,
-    "error": "Invalid API key provided."
+    "success": false,
+    "statusCode": 400,
+    "errorCode": "VALIDATION_ERROR",
+    "message": "",
+    "details": [
+        {
+            "type": "missing",
+            "loc": [
+                "text"
+            ],
+            "msg": "Field required",
+            "input": {},
+            "url": "https://errors.pydantic.dev/2.10/v/missing"
+        }
+    ]
 }
 ```
+> Checkout [documentation](https://docs.walled.ai/error-codes-1302667m0) for understanding of error codes 
 
 ## Configuration Options
 

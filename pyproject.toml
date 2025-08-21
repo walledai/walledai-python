@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "walledai"
-version = "4.7.4"
+version = "4.7.5"
 description = "A Python SDK for interacting with Walled AI"
 readme = "README.md"
 authors = [{ name = "Walled AI", email = "rishabh@walled.ai" }]
