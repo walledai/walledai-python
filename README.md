@@ -8,7 +8,20 @@
 
 Guardrails and PII redaction for LLM apps — simple Python SDK.
 
-[Website](https://www.walled.ai/) • [PyPI](https://pypi.org/project/walledai/) • [Hugging Face](https://huggingface.co/walledai) • [Docs](https://docs.walled.ai/) • [Error Codes](https://docs.walled.ai/error-codes-1302667m0)
+<p align="center">
+  <a href="https://pypi.org/project/walledai/">
+    <img src="https://img.shields.io/pypi/v/walledai?color=blue&label=PyPI&logo=pypi&logoColor=white" alt="PyPI Version"/>
+  </a>
+  <a href="https://huggingface.co/walledai">
+    <img src="https://img.shields.io/badge/🤗-Hugging%20Face-yellow" alt="Hugging Face"/>
+  </a>
+  <a href="https://docs.walled.ai/">
+    <img src="https://img.shields.io/badge/📖-Docs-green" alt="Docs"/>
+  </a>
+  <a href="https://www.walled.ai/">
+    <img src="https://img.shields.io/badge/🌐-Website-red" alt="Website"/>
+  </a>
+</p>
 
 ---
 
