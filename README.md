@@ -3,6 +3,7 @@
    <img width="400" alt="NewLogo" src="https://github.com/user-attachments/assets/512d71e5-e7f4-43cc-9ba5-7020073f5cda" />
   </a>
 </p>
+
 # Walled AI SDK (Python)
 
 Guardrails and PII redaction for LLM apps — simple Python SDK.
