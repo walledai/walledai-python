@@ -323,19 +323,70 @@ Mapping: {'[Person_1]': 'John Doe', '[Person_2]': 'Joseph', '[Email_1]': 'Joseph
 
 ## Errors
 
+### WalledProtect
 <details>
 <summary>Expand</summary>
 
+#### Error Response
+
+| Field     | Type   | Description |
+|-----------|--------|-------------|
+| `success` | `bool` | Always `False` for error responses |
+| `statusCode`| `int`  | Http Status Code for errors |
+| `errorCode`| `str`| Main Model Error Code (for guardrail/pii)|
+| `message`|`str`| Description of Error|
+| `details`| `dict`| Details of Error|
+
 ```python
 {
-  "success": false,
-  "statusCode": 400,
-  "errorCode": "INVALID_GREETING_TYPE",
-  "message": "Invalid greeting types: ['Casual & Friendlyy']",
-  "details": {
-    "invalid_greetings": ["Casual & Friendlyy"],
-    "valid_greetings": ["Casual & Friendly","Professional & Polite"]
-  }
+    "success": false,
+    "statusCode": 400,
+    "errorCode": "INVALID_GREETING_TYPE",
+    "message": "Invalid greeting types: ['Casual & Friendlyy']. Must be one of: ['Casual & Friendly', 'Professional & Polite']",
+    "details": {
+        "invalid_greetings": [
+            "Casual"
+        ],
+        "valid_greetings": [
+            "Casual & Friendly",
+            "Professional & Polite"
+        ]
+    }
+}
+```
+</details>
+
+### WalledRedact
+<details>
+<summary>Expand</summary>
+
+#### Error Response
+
+| Field     | Type   | Description |
+|-----------|--------|-------------|
+| `success` | `bool` | Always `False` for error responses |
+| `statusCode`| `int`  | Http Status Code for errors |
+| `errorCode`| `str`| Main Model Error Code (for guardrail/pii)|
+| `message`|`str`| Description of Error|
+| `details`| `dict`| Details of Error|
+
+```python
+{
+    "success": false,
+    "statusCode": 400,
+    "errorCode": "VALIDATION_ERROR",
+    "message": "",
+    "details": [
+        {
+            "type": "missing",
+            "loc": [
+                "text"
+            ],
+            "msg": "Field required",
+            "input": {},
+            "url": "https://errors.pydantic.dev/2.10/v/missing"
+        }
+    ]
 }
 ```
 </details>
