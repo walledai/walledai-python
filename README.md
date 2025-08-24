@@ -1,8 +1,13 @@
+<p align="center">
+  <a href="https://www.walled.ai/">
+   <img width="400" alt="NewLogo" src="https://github.com/user-attachments/assets/512d71e5-e7f4-43cc-9ba5-7020073f5cda" />
+  </a>
+</p>
 # Walled AI SDK (Python)
 
 Guardrails and PII redaction for LLM apps — simple Python SDK.
 
-[PyPI](https://pypi.org/project/walledai/) • [Docs](https://docs.walled.ai/) • [Error Codes](https://docs.walled.ai/error-codes-1302667m0)
+[Website](https://www.walled.ai/) • [PyPI](https://pypi.org/project/walledai/) • [Hugging Face](https://huggingface.co/walledai) • [Docs](https://docs.walled.ai/) • [Error Codes](https://docs.walled.ai/error-codes-1302667m0)
 
 ---
 
