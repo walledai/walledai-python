@@ -27,15 +27,16 @@ Guardrails and PII redaction for LLM apps — simple Python SDK.
 
 ## ⚖️ Benchmark Comparison
 
-| Platform      | 🛡️ Accuracy (English) | 🌍 Accuracy (Multilingual) | ⚡ Latency | 🏢 On-Prem |
-|---------------|------------------------|----------------------------|------------|------------|
-| 🚀 **Walled AI** | **87.54%** ✅         | **0.9029** 🌟              | **200 ms** (✨30 ms on-prem) | ✅ Yes |
-| Bedrock       | 76.17%                 | 0.7926                     | 500 ms     | ❌ No |
-| Mistral       | 73.16%                 | 0.7686                     | 300 ms     | ❌ No |
-| Azure         | 70.83%                 | 0.7374                     | 300 ms     | ❌ No |
-| OpenAI        | 70.02%                 | 0.7295                     | 350 ms     | ❌ No |
+| Platform        | 🛡️ English ↑ | 🌍 Multilingual ↑ | ⚡ Latency ↓        | 🏢 On-Prem |
+|-----------------|--------------|-------------------|---------------------|------------|
+| 🚀 **Walled AI** | **87.54%** ✅ | **0.9029** 🌟      | **200 ms** (30 ms*) | ✅ Yes |
+| Bedrock         | 76.17%       | 0.7926            | 500 ms              | ❌ No |
+| Mistral         | 73.16%       | 0.7686            | 300 ms              | ❌ No |
+| Azure           | 70.83%       | 0.7374            | 300 ms              | ❌ No |
+| OpenAI          | 70.02%       | 0.7295            | 350 ms              | ❌ No |
 
-<sub>🌍 Multilingual benchmark includes: Arabic, English, Filipino, French, Hindi, Russian, Serbian, Spanish.</sub>
+<sub>🌍 Multilingual benchmark: Arabic, English, Filipino, French, Hindi, Russian, Serbian, Spanish.</sub>  
+<sub>*✨ 30 ms on-premises deployment.</sub>
 
 
 ## 🚀 Installation
