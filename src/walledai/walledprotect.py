@@ -78,7 +78,7 @@ class WalledProtect:
 
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}"  # Adjust as needed for your API
+            "x-api-key": self.api_key # Adjust as needed for your API
         }
 
         async with session.post(url, json=payload, headers=headers) as response:

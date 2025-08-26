@@ -46,7 +46,7 @@ class WalledRedact:
         
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}"
+            "x-api-key":  self.api_key
         }
         async with session.post(url, json=payload, headers=headers) as response:
             resp_json = await response.json()
