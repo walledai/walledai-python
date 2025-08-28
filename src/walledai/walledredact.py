@@ -14,7 +14,7 @@ from typing import List, Union
 class WalledRedact:
     ''' Redact'''
     count=1
-    url=f'{base_url}/pii/encrypt'
+    url=f'{base_url}/walled-redact'
     def __init__(self,api_key:str,retries:int=2,timeout:float=20.0):
         """
         Initialize the PII client.

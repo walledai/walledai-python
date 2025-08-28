@@ -19,7 +19,7 @@ from typing_extensions import Literal
 class WalledProtect:
     ''' Walled Protect '''
     count = 1
-    url = f'{base_url}/guardrail/moderate'
+    url = f'{base_url}/walled-protect'
 
     # Define enums for allowed PII and greetings columns
     PII_ENUM = {
