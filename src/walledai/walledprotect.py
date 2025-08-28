@@ -19,7 +19,6 @@ from typing_extensions import Literal
 class WalledProtect:
     ''' Walled Protect '''
     count = 1
-    url = f'{base_url}/walled-protect'
 
     # Define enums for allowed PII and greetings columns
     PII_ENUM = {
@@ -56,6 +55,8 @@ class WalledProtect:
         self.api_key = api_key
         self.retries = retries
         self.timeout = timeout
+        self.url = f'{base_url}/walled-protect'
+
 
     async def _http_api_call(
         self,
@@ -67,7 +68,6 @@ class WalledProtect:
         pii_list: List[Literal["Person's Name", "Address", "Email Id", "Contact No", "Date Of Birth", "Unique Id", "Financial Data"]] = []
     ):
         """Make HTTP API call"""
-        url = f"{base_url}/guardrail/moderate"
         payload = {
             "text": text,
             "greetings_list": greetings_list,  # ["Casual & Friendly", "Professional & Polite"],
@@ -81,7 +81,7 @@ class WalledProtect:
             "x-api-key": self.api_key # Adjust as needed for your API
         }
 
-        async with session.post(url, json=payload, headers=headers) as response:
+        async with session.post(self.url, json=payload, headers=headers) as response:
             resp_json = await response.json()
             if response.status != 200:
                 raise Exception(resp_json)  # raise the JSON directly

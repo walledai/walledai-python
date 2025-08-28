@@ -14,7 +14,6 @@ from typing import List, Union
 class WalledRedact:
     ''' Redact'''
     count=1
-    url=f'{base_url}/walled-redact'
     def __init__(self,api_key:str,retries:int=2,timeout:float=20.0):
         """
         Initialize the PII client.
@@ -36,10 +35,11 @@ class WalledRedact:
         self.api_key = api_key
         self.retries=retries  
         self.timeout=timeout
+        self.url=f'{base_url}/walled-redact'
+
         
     async def _http_api_call(self, session, text):
         """Make HTTP API call"""
-        url = f"{base_url}/pii/encrypt"
         payload = {
             "text": text
         }
@@ -48,7 +48,7 @@ class WalledRedact:
             "Content-Type": "application/json",
             "x-api-key":  self.api_key
         }
-        async with session.post(url, json=payload, headers=headers) as response:
+        async with session.post(self.url, json=payload, headers=headers) as response:
             resp_json = await response.json()
             if response.status != 200:
                 raise Exception(resp_json)
