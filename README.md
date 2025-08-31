@@ -35,7 +35,6 @@ Guardrails and PII redaction for LLM apps — simple Python SDK.
 | Azure           | 74.52%       | 73.74%            | 300 ms              | ❌ No |
 | OpenAI          | 76.29%       | 72.95%            | 350 ms              | ❌ No |
 
-<sub>🛡️ Multilingual benchmark: Arabic, English, Filipino, French, Hindi, Russian, Serbian, Spanish.</sub>  
 <sub>🌍 Multilingual benchmark: Arabic, English, Filipino, French, Hindi, Russian, Serbian, Spanish.</sub>  
 <sub>*✨ 30 ms on-premises deployment.</sub>
 
