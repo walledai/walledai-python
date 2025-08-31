@@ -29,7 +29,7 @@ Guardrails and PII redaction for LLM apps — simple Python SDK.
 
 | Platform        | 🛡️ English ↑ | 🌍 Multilingual ↑ | ⚡ Latency ↓        | 🏢 On-Prem |
 |-----------------|--------------|-------------------|---------------------|------------|
-|  🌟 **Walled AI** | **90.30%** | **90.29%**      | **200 ms** (30 ms*) | ✅ Yes |
+|  🌟 **Walled AI** | **90.30%** | **90.29%**      | **300 ms** (30 ms*) | ✅ Yes |
 | Bedrock         | 83.36%       | 79.26%            | 500 ms              | ❌ No |
 | Mistral         | 76.07%       | 76.86%            | 300 ms              | ❌ No |
 | Azure           | 74.52%       | 73.74%            | 300 ms              | ❌ No |
